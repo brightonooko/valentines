@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In Your Hands</title>
+    <style>
+        :root {
+            --primary-pink: #f8bbd0; /* Match the "Yes" background color */
+            --heart-red: #d81b60;
+            --text-color: #5d4037;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Georgia', serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--primary-pink);
+            overflow: hidden;
+        }
+
+        /* --- Large Floating Hearts --- */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .heart {
+            position: absolute;
+            color: var(--heart-red);
+            font-size: 3.5rem; /* Bigger animations */
+            animation: floatUp 6s linear forwards;
+            opacity: 0.5;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-20vh) scale(1.8); opacity: 0; }
+        }
+
+        /* --- Cat Image --- */
+        .cat-image {
+            width: 180px;
+            margin-bottom: 10px;
+            z-index: 15;
+            border-radius: 15px;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+        }
+
+        /* --- Horizontal Card --- */
+        .card-container {
+            width: 600px;
+            height: 320px;
+            position: relative;
+            z-index: 10;
+            perspective: 1500px;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-radius: 15px;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #eee;
+        }
+
+        /* --- Front Side --- */
+        .card-front h1 {
+            color: var(--text-color);
+            margin-bottom: 35px;
+            font-size: 2.5rem;
+            white-space: nowrap; /* Forces one line */
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 30px;
+        }
+
+        button {
+            padding: 15px 45px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-transform: uppercase;
+        }
+
+        #yesBtn {
+            background-color: var(--heart-red);
+            color: white;
+        }
+
+        #noBtn {
+            background-color: #f5f5f5;
+            color: #999;
+            z-index: 20;
+        }
+
+        /* --- Back Side --- */
+        .card-back {
+            transform: rotateY(180deg);
+            text-align: left;
+            padding: 40px;
+        }
+
+        .recipient { font-weight: bold; margin-bottom: 15px; color: var(--heart-red); font-size: 1.4rem; }
+        .message { line-height: 1.8; color: var(--text-color); font-style: italic; font-size: 1.1rem; }
+        .sender { align-self: flex-end; margin-top: 15px; font-weight: bold; }
+
+        @media (max-width: 650px) {
+            .card-container { width: 95vw; height: 300px; }
+            .card-front h1 { font-size: 1.5rem; }
+            .cat-image { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop autoplay>
+        <source src="Halle - In Your Hands (Official Video).mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="hearts-container" id="hearts"></div>
+
+    <img src="cat-0.jpg" alt="Cat" class="cat-image" id="catPic">
+
+    <div class="card-container">
+        <div class="card-inner" id="card">
+            
+            <div class="card-face card-front">
+                <h1>Will you be my Valentine?</h1>
+                <div class="btn-group">
+                    <button id="yesBtn">Yes</button>
+                    <button id="noBtn">No</button>
+                </div>
+            </div>
+
+            <div class="card-face card-back">
+                
+                <p class="message">
+                    "In your hands," everything feels exactly as it should be. 
+                    I'm so incredibly lucky to have you by my side. Here is to 
+                    more laughter, more love, and more us.
+                </p>
+                <p class="recipient">Happy Valentines</p>
+                <p class="sender">~ Ben Henry</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const card = document.getElementById('card');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const music = document.getElementById('bgMusic');
+        const heartsContainer = document.getElementById('hearts');
+        const catPic = document.getElementById('catPic');
+
+        // Start hearts and music on load
+        window.onload = () => {
+            startHearts();
+            music.play().catch(() => {
+                console.log("Waiting for user interaction to play music...");
+            });
+        };
+
+        // Fallback for browsers blocking autoplay
+        document.body.addEventListener('click', () => {
+            if (music.paused) music.play();
+        }, { once: true });
+
+        // No Button evasion
+        noBtn.addEventListener('mouseover', () => {
+            const maxX = 160;
+            const maxY = 120;
+            const x = Math.random() * (maxX * 2) - maxX;
+            const y = Math.random() * (maxY * 2) - maxY;
+            noBtn.style.transform = `translate(${x}px, ${y}px)`;
+        });
+
+        // Yes Button flip
+        yesBtn.addEventListener('click', () => {
+            card.classList.add('is-flipped');
+            catPic.style.opacity = '0'; // Smoothly hide cat
+            setTimeout(() => catPic.style.display = 'none', 500);
+        });
+
+        function startHearts() {
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 30 + 30) + 'px'; 
+                heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                heartsContainer.appendChild(heart);
+                setTimeout(() => heart.remove(), 6000);
+            }, 500);
+        }
+    </script>
+</body>
+</html>
